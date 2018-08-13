@@ -1,0 +1,65 @@
+#!/bin/bash
+# Feb 14 2018
+# Chibueze Ogoko
+# Search a medication list
+# Purpose:search a medication list and produce a report as requested
+
+
+search_txt=$(cat medslist | cut -c5-12)
+
+# create loop with test for exit medication code
+until echo -n "Enter Medication Code? "
+   read medcode
+   [ "$medcode" = 'ZZZ' ]
+do
+   while  echo -n "See Generic Name(G/g) or Dose (D/d)? "
+      read name
+   do
+
+    # check medication code in variable search_txt to
+    # avoid entering body of code if the medication code is incorrect
+    if [[ "$search_txt" =~ "$medcode" ]]
+     then
+
+        # read file by line in while loop and check if each line's
+        # medication code field matches the input medcode
+        while read wholeline
+        do
+          if [[ $(echo "${wholeline:4:8}") =~ "$medcode" ]]
+          then
+
+            # give output of result matching Dose or Generic name
+            # and default output if name is entered incorrectly
+            if [[ "$name" =~ [Dd] ]]
+            then
+              echo -n "${wholeline:4:8}"
+              echo -n "  "
+              echo "${wholeline:25:14}"
+            elif [[ "$name" =~ [Gg] ]]
+            then
+               echo -n "${wholeline:4:8}"
+               echo -n "  "
+               echo  "${wholeline:12:13}"
+            else
+               echo "Please enter only G or D."
+
+               # break out of loop to ask for generic name or dose input
+               break
+            fi
+          fi
+
+          # Test if line is null which signals end of the file read into while
+          # loop and exit loops to the start of inputing medication code.
+          if [ -z "$wholeline" ]
+          then
+             break 2
+          fi
+        done < medslist
+     else
+        echo "No Such Medication Code."
+        break
+     fi
+   done
+done
+echo "Good Bye."
+exit 0
